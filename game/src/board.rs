@@ -170,7 +170,7 @@ impl Board{
 
     pub fn num_player_attacking_square(&self, square: Bitboard) -> u32{
         let pawn_attackers = pawn::get_all_pawn_attackers(square, self.player_pieces & self.pawns, self.ply);
-        let knight_attackers = knight::knight_all_targets(square) & (self.knights & self.player_pieces);
+        let knight_attackers = knight::knight_all_moves(square) & (self.knights & self.player_pieces);
         let bishop_attackers =  bishop::bishop_all_moves(square, self.all) & (self.bishops & self.player_pieces);
         let rook_attackers = rook::rook_all_moves(square, self.all) & (self.rooks & self.player_pieces);
         let queen_attackers = queen::queen_all_moves(square, self.all) & (self.queens & self.player_pieces);
@@ -180,7 +180,7 @@ impl Board{
 
     pub fn num_opponent_attacking_square(&self, square: Bitboard) -> u32{
         let pawn_attackers = pawn::get_all_pawn_attackers(square, -self.player_pieces & self.pawns, if self.ply == 1 {0} else {1});
-        let knight_attackers = knight::knight_all_targets(square) & (self.knights & -self.player_pieces);
+        let knight_attackers = knight::knight_all_moves(square) & (self.knights & -self.player_pieces);
         let bishop_attackers =  bishop::bishop_all_moves(square, self.all) & (self.bishops & -self.player_pieces);
         let rook_attackers = rook::rook_all_moves(square, self.all) & (self.rooks & -self.player_pieces);
         let queen_attackers = queen::queen_all_moves(square, self.all) & (self.queens & -self.player_pieces);
@@ -193,7 +193,7 @@ impl Board{
         let mut pawn_single_push = pawn::pawn_single_push(self.player_pieces & self.pawns, self.ply) & -self.all;
         let mut pawn_double_push = pawn::pawn_double_push(pawn_single_push, self.ply) & -self.all;
         let mut pawn_attacks = pawn::pawn_all_attacks(self.pawns & self.player_pieces, self.ply) & (self.all ^ self.player_pieces);
-        let mut knight_moves= knight::knight_all_targets(self.knights & self.player_pieces) & -self.player_pieces;
+        let mut knight_moves= knight::knight_all_moves(self.knights & self.player_pieces) & -self.player_pieces;
         let mut bishop_moves = bishop::bishop_all_moves(self.bishops & self.player_pieces, self.all) & -self.player_pieces;
         let mut rook_moves = rook::rook_all_moves(self.rooks & self.player_pieces, self.all) & -self.player_pieces; 
         let mut queen_moves = queen::queen_all_moves(self.queens & self.player_pieces, self.all) & -self.player_pieces;
@@ -249,7 +249,7 @@ impl Board{
     
         while knight_moves.value() != 0{
             let location = knight_moves.least_signicant();
-            let mut attackers = knight::knight_all_targets(location) & (self.knights & self.player_pieces);
+            let mut attackers = knight::knight_all_moves(location) & (self.knights & self.player_pieces);
             while attackers.value() != 0{
                 let attacker = attackers.least_signicant();
                 let new_board = self.move_piece((attacker.least_signicant_index(), location.least_signicant_index(), 3, self.get_piece_bitboards(&location).0));
