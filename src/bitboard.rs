@@ -33,38 +33,53 @@ pub struct Bitboard(u64);
     }
 
     pub fn north_one(&self) -> Bitboard{
-        (self  & -EIGHT_RANK) << 8
+        if self.0 == 0 {
+            return *self;
+        }
+        return (self  & -EIGHT_RANK) << 8
     }
 
     pub fn south_one(&self) -> Bitboard{
-        (self & -FIRST_RANK) >> 8
+        if self.0 == 0 {
+            return *self;
+        }
+        return (self & -FIRST_RANK) >> 8
     }
 
     pub fn west_one(&self) -> Bitboard{
-        (self & -A_FILE) << 1
+        if self.0 == 0 {
+            return *self;
+        }
+        return (self & -A_FILE) << 1
     }
     
     pub fn east_one(&self) -> Bitboard{
-        (self & -H_FILE) >> 1
+        if self.0 == 0 {
+            return *self;
+        }
+        return (self & -H_FILE) >> 1
     }
 
     pub fn north_east_one(&self) -> Bitboard{
-        (self & -H_FILE & -EIGHT_RANK) << 7
+        return self.north_one().east_one();
     }
 
     pub fn south_east_one(&self) -> Bitboard{
-        (self & -H_FILE & -FIRST_RANK) >> 9
+        return self.south_one().east_one();
     }
 
     pub fn north_west_one(&self) -> Bitboard{
-        (self & -A_FILE & -EIGHT_RANK) << 9
+        return self.north_one().west_one();
     }
 
     pub fn south_west_one(&self) -> Bitboard{
-        (self & -A_FILE & -FIRST_RANK) >> 7
+        return self.south_one().west_one();
     }
 
     pub fn fill(&self, obstiacles: Self, direction: fn(&Bitboard) -> Bitboard) -> Bitboard{
+        if self.0 == 0{
+            return *self;
+        }
         let mut ray = Self(self.0);
 
         loop{
@@ -76,7 +91,7 @@ pub struct Bitboard(u64);
             }
             ray = tmp | ray;
         }
-        return direction(&ray);
+        return direction(&ray) | *self;
     }
 
     pub fn least_signicant(&self) -> Bitboard{
@@ -99,7 +114,7 @@ impl BitAnd for Bitboard{
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
-        Self(self.0 & rhs.0)
+        return Self(self.0 & rhs.0);
     }
 }
 
@@ -108,7 +123,7 @@ impl BitOr for Bitboard{
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        Self(self.0 | rhs.0)
+        return Self(self.0 | rhs.0);
     }
 }
 
@@ -116,7 +131,7 @@ impl BitXor for Bitboard{
     type Output = Self;
 
     fn bitxor(self, rhs: Self) -> Self::Output{
-       Self(self.0 ^ rhs.0)
+       return Self(self.0 ^ rhs.0);
     }
 }
 
@@ -124,7 +139,7 @@ impl Neg for Bitboard{
     type Output = Self;
 
     fn neg(self) -> Self::Output{
-        Self(u64::MAX ^ self.0)
+        return Self(u64::MAX ^ self.0);
     }
 }
 
@@ -133,7 +148,7 @@ impl BitAnd<Bitboard> for &Bitboard{
     type Output = Bitboard;
 
     fn bitand(self, rhs: Bitboard) -> Self::Output {
-        Bitboard(self.0 & rhs.0)
+        return Bitboard(self.0 & rhs.0);
     }
 }
 
@@ -142,7 +157,7 @@ impl BitOr<Bitboard> for &Bitboard{
     type Output = Bitboard;
 
     fn bitor(self, rhs: Bitboard) -> Self::Output {
-        Bitboard(self.0 | rhs.0)
+        return Bitboard(self.0 | rhs.0);
     }
 }
 
@@ -150,7 +165,7 @@ impl BitXor<Bitboard> for &Bitboard{
     type Output = Bitboard;
 
     fn bitxor(self, rhs: Bitboard) -> Self::Output{
-        Bitboard(self.0 ^ rhs.0)
+        return Bitboard(self.0 ^ rhs.0);
     }
 }
 
@@ -158,7 +173,7 @@ impl Neg for &Bitboard{
     type Output = Bitboard;
 
     fn neg(self) -> Self::Output{
-        Bitboard(u64::MAX ^ self.0)
+        return Bitboard(u64::MAX ^ self.0);
     }
 }
 
@@ -166,7 +181,7 @@ impl Shl<u64> for &Bitboard{
     type Output = Bitboard;
 
     fn shl(self, rhs: u64) -> Self::Output {
-        Bitboard(self.0 << rhs)
+        return Bitboard(self.0 << rhs);
     }
 }
 
@@ -174,7 +189,7 @@ impl Shr<u64> for &Bitboard{
     type Output = Bitboard;
 
     fn shr(self, rhs: u64) -> Self::Output {
-        Bitboard(self.0 >> rhs)
+        return Bitboard(self.0 >> rhs);
     }
 }
 
@@ -182,7 +197,7 @@ impl Shl<u64> for Bitboard{
     type Output = Self;
 
     fn shl(self, rhs: u64) -> Self::Output {
-        Bitboard(self.0 << rhs)
+        return Bitboard(self.0 << rhs);
     }
 }
 
@@ -190,20 +205,20 @@ impl Shr<u64> for Bitboard{
     type Output = Self;
 
     fn shr(self, rhs: u64) -> Self::Output {
-        Bitboard(self.0 >> rhs)
+        return Bitboard(self.0 >> rhs);
     }
 }
 
 impl PartialEq for Bitboard {
     fn eq(&self, rhs: &Self) -> bool {
-        self.0 == rhs.0
+        return self.0 == rhs.0;
     }
 }
 
 impl Clone for Bitboard{
 
     fn clone(&self) -> Bitboard {
-        *self
+        return *self;
     }
 }
 
@@ -225,6 +240,225 @@ impl Display for Bitboard {
             i = i - 1;
         }
         return write!(f, "{}", str);
+    }
+}
+
+#[cfg(test)]
+mod test{
+    use super::Bitboard;
+
+    #[test]
+    fn flip_bit(){
+        let mut board = Bitboard(0);
+        board.flip_bit(0);
+        assert_eq!(board.value(), 1);
+    }
+
+    #[test]
+    fn check_bit(){
+        let mut board = Bitboard(0);
+        board.flip_bit(5);
+        assert!(board.check_bit(5));
+    }
+
+    #[test]
+    fn population_count(){
+        let mut board = Bitboard(0);
+        board.flip_bit(0);
+        assert_eq!(board.popultion_count(), 1);
+        board.flip_bit(1);
+        assert_eq!(board.popultion_count(), 2);
+    }
+
+    #[test]
+    fn least_significant(){
+        let mut board = Bitboard(0);
+        board.flip_bit(0);
+        board.flip_bit(1);
+        let least = board.least_signicant();
+        assert_ne!(least.value(), board.value());
+        board.flip_bit(0);
+        assert_eq!(least.value(), board.value());
+    }
+
+    #[test]
+    fn least_significant_index(){
+        let mut board = Bitboard(0);
+        board.flip_bit(0);
+        board.flip_bit(5);
+        let mut least = board.least_signicant_index();
+        assert_eq!(least, 5);
+        board.flip_bit(5);
+        least = board.least_signicant_index();
+        assert_eq!(least, 0);
+    }
+
+    #[test]
+    fn north_one(){
+        let mut board = Bitboard(0);
+        board = board.north_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(0);
+        board = board.north_one();
+        assert!(board.check_bit(8));
+        board.flip_bit(8);
+        board.flip_bit(63);
+        board = board.north_one();
+        assert_eq!(board.value(), 0);
+    }
+    #[test]
+    fn south_one(){
+        let mut board = Bitboard(0);
+        board = board.south_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(63);
+        board = board.south_one();
+        assert!(board.check_bit(55));
+        board.flip_bit(55);
+        board.flip_bit(0);
+        board = board.south_one();
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn west_one(){
+        let mut board = Bitboard(0);
+        board = board.west_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(0);
+        board = board.west_one();
+        assert!(board.check_bit(1));
+        board.flip_bit(1);
+        board.flip_bit(7);
+        board = board.west_one();
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn east_one(){
+        let mut board = Bitboard(0);
+        board = board.east_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(7);
+        board = board.east_one();
+        assert!(board.check_bit(6));
+        board.flip_bit(6);
+        board.flip_bit(0);
+        board = board.east_one();
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn north_west_one(){
+        let mut board = Bitboard(0);
+        board = board.north_west_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(0);
+        board = board.north_west_one();
+        assert!(board.check_bit(9));
+        board.flip_bit(9);
+        board.flip_bit(63);
+        board = board.north_west_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(62);
+        board = board.north_west_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(55);
+        board = board.north_west_one();
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn north_east_one(){
+        let mut board = Bitboard(0);
+        board = board.north_east_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(7);
+        board = board.north_east_one();
+        assert!(board.check_bit(14));
+        board.flip_bit(14);
+        board.flip_bit(56);
+        println!("{}", board);
+        board = board.north_east_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(57);
+        board = board.north_east_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(48);
+        board = board.north_east_one();
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn south_west_one(){
+        let mut board = Bitboard(0);
+        board = board.south_west_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(56);
+        board = board.south_west_one();
+        assert!(board.check_bit(49));
+        println!("{}", board);
+        board.flip_bit(49);
+        board.flip_bit(7);
+        board = board.south_west_one();
+        println!("{}", board);
+        assert_eq!(board.value(), 0);
+        board.flip_bit(6);
+        board = board.south_west_one();
+        println!("{}", board);
+        assert_eq!(board.value(), 0);
+        board.flip_bit(63);
+        board = board.south_west_one();
+        println!("{}", board);
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn south_east_one(){
+        let mut board = Bitboard(0);
+        board = board.south_east_one();
+        assert_eq!(board.value(), 0);
+        board.flip_bit(63);
+        board = board.south_east_one();
+        assert!(board.check_bit(54));
+        println!("{}", board);
+        board.flip_bit(54);
+        board.flip_bit(0);
+        board = board.south_east_one();
+        println!("{}", board);
+        assert_eq!(board.value(), 0);
+        board.flip_bit(1);
+        board = board.south_east_one();
+        println!("{}", board);
+        assert_eq!(board.value(), 0);
+        board.flip_bit(8);
+        board = board.south_east_one();
+        println!("{}", board);
+        assert_eq!(board.value(), 0);
+    }
+
+    #[test]
+    fn fill(){
+        let mut board = Bitboard(1);
+        let mut obsticales = Bitboard(0);
+        let mut filled = board.fill(obsticales, Bitboard::north_one);
+        assert_eq!(filled.popultion_count(), 8);
+        filled = board.fill(obsticales, Bitboard::west_one);
+        assert_eq!(filled.popultion_count(), 8);
+        board = Bitboard(0);
+        board.flip_bit(63);
+        filled = board.fill(obsticales, Bitboard::south_one);
+        assert_eq!(filled.popultion_count(), 8);
+        filled = board.fill(obsticales, Bitboard::east_one);
+        assert_eq!(filled.popultion_count(), 8);
+        filled = board.fill(obsticales, Bitboard::south_east_one);
+        filled = filled.fill(obsticales, Bitboard::east_one);
+        assert_eq!(filled.popultion_count(), 36);
+        obsticales.flip_bit(62);
+        filled = board.fill(obsticales, Bitboard::east_one);
+        print!("{}", filled);
+        assert_eq!(filled.popultion_count(), 2);
+
     }
 }
 
